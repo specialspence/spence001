@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Inner Circle 🔑👑 - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+        }
+        
+        .message-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.5);
+        }
+        
+        .chat-container, .members-container {
+            scrollbar-width: thin;
+            scrollbar-color: #4b5563 #1f2937;
+        }
+        
+        .chat-container::-webkit-scrollbar,
+        .members-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-container::-webkit-scrollbar-track,
+        .members-container::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        
+        .chat-container::-webkit-scrollbar-thumb,
+        .members-container::-webkit-scrollbar-thumb {
+            background-color: #4b5563;
+            border-radius: 20px;
+        }
+        
+        .modal {
+            backdrop-filter: blur(5px);
+        }
+        
+        .message-bubble {
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        
+        .typing-indicator::after {
+            content: "...";
+            animation: typing 1.5s infinite;
+        }
+        
+        @keyframes typing {
+            0% { content: "."; }
+            33% { content: ".."; }
+            66% { content: "..."; }
+        }
+        
+        .crown-icon {
+            text-shadow: 0 0 8px rgba(245, 158, 11, 0.7);
+        }
+        
+        .key-icon {
+            text-shadow: 0 0 8px rgba(139, 92, 246, 0.7);
+        }
+        
+        .tab-active {
+            border-bottom: 2px solid #8b5cf6;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .pending-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-black border-b border-gray-800 py-4 px-6 sticky top-0 z-10">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <h1 class="text-2xl font-bold">
+                    <span class="key-icon text-purple-500">🔑</span>
+                    <span class="crown-icon text-yellow-500">👑</span>
+                    The Inner Circle
+                </h1>
+                <span class="bg-purple-900 text-xs px-2 py-1 rounded-full">ADMIN</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="membersBtn" class="relative">
+                    <i class="fas fa-users text-xl text-gray-400 hover:text-white"></i>
+                    <span class="pending-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
+                </button>
+                <button id="inviteBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full flex items-center space-x-2 transition-all">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Invite</span>
+                </button>
+                <button id="menuBtn" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-ellipsis-v text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex">
+        <!-- Chat Area -->
+        <div class="flex-1 flex flex-col border-r border-gray-800">
+            <!-- Group Info -->
+            <div class="bg-gray-900 p-6 border-b border-gray-800">
+                <div class="max-w-3xl mx-auto text-center">
+                    <h2 class="text-3xl font-bold mb-4">Welcome to The Inner Circle <span class="crown-icon text-yellow-500">👑</span></h2>
+                    <p class="text-gray-300 mb-6">
+                        This is where the vibes are always high 🔥, the conversations are real 💬, and the bond is unbreakable 🤝. 
+                        Whether it's sharing the latest news 📲, funny moments 😂, or just catching up 👀, this is the spot where 
+                        we all come together 🌍 to stay connected 💫. Let's keep the energy positive ✨, the laughs flowing 😂, 
+                        and always support each other 💪. You're all family here! 🙌
+                    </p>
+                    <div class="flex justify-center space-x-4">
+                        <div class="bg-gray-800 px-4 py-2 rounded-full flex items-center space-x-2">
+                            <i class="fas fa-users text-purple-500"></i>
+                            <span>24 Members</span>
+                        </div>
+                        <div class="bg-gray-800 px-4 py-2 rounded-full flex items-center space-x-2">
+                            <i class="fas fa-comment-dots text-purple-500"></i>
+                            <span>1,204 Messages</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="flex-1 overflow-y-auto chat-container p-4 bg-gray-900">
+                <div class="max-w-3xl mx-auto space-y-4">
+                    <!-- System Message -->
+                    <div class="flex justify-center">
+                        <div class="bg-gray-800 text-gray-400 text-sm px-4 py-2 rounded-full">
+                            You joined The Inner Circle
+                        </div>
+                    </div>
+                    
+                    <!-- Date Divider -->
+                    <div class="flex items-center my-6">
+                        <div class="flex-1 border-t border-gray-700"></div>
+                        <span class="px-4 text-gray-500 text-sm">Today</span>
+                        <div class="flex-1 border-t border-gray-700"></div>
+                    </div>
+                    
+                    <!-- Sample Messages -->
+                    <div class="flex justify-start">
+                        <div class="message-bubble bg-gray-800 p-4 rounded-2xl rounded-tl-none">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold">JD</div>
+                                <span class="font-bold">John Doe</span>
+                                <span class="text-xs text-gray-500">2:30 PM</span>
+                            </div>
+                            <p>Hey everyone! What's the vibe today? 🔥</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <div class="message-bubble bg-purple-900 p-4 rounded-2xl rounded-tr-none">
+                            <div class="flex items-center space-x-2 mb-1 justify-end">
+                                <span class="text-xs text-gray-300">2:32 PM</span>
+                                <span class="font-bold">You</span>
+                            </div>
+                            <p>Just joined! The energy here is amazing ✨</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-start">
+                        <div class="message-bubble bg-gray-800 p-4 rounded-2xl rounded-tl-none">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <div class="w-8 h-8 rounded-full bg-yellow-600 flex items-center justify-center font-bold">SA</div>
+                                <span class="font-bold">Sarah A.</span>
+                                <span class="text-xs text-gray-500">2:35 PM</span>
+                            </div>
+                            <p>Welcome to the family! 🙌 We were just planning a get-together this weekend. You in?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-start">
+                        <div class="message-bubble bg-gray-800 p-4 rounded-2xl rounded-tl-none">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold">MJ</div>
+                                <span class="font-bold">Mike J.</span>
+                                <span class="text-xs text-gray-500">2:36 PM</span>
+                            </div>
+                            <div class="mb-2">
+                                <p>Check out this meme I found 😂</p>
+                            </div>
+                            <div class="bg-gray-700 rounded-xl overflow-hidden max-w-xs">
+                                <img src="https://via.placeholder.com/300x200/4B5563/FFFFFF?text=Funny+Meme" alt="Meme" class="w-full">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <div class="message-bubble bg-purple-900 p-4 rounded-2xl rounded-tr-none">
+                            <div class="flex items-center space-x-2 mb-1 justify-end">
+                                <span class="text-xs text-gray-300">2:38 PM</span>
+                                <span class="font-bold">You</span>
+                            </div>
+                            <p>Definitely in for the weekend! And that meme is gold 😂</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-start">
+                        <div class="message-bubble bg-gray-800 p-4 rounded-2xl rounded-tl-none">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold">JD</div>
+                                <span class="font-bold">John Doe</span>
+                                <span class="text-xs text-gray-500">2:40 PM</span>
+                            </div>
+                            <p>This is why I love this group. Instant good vibes! 💫</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-start">
+                        <div class="message-bubble bg-gray-800 p-4 rounded-2xl rounded-tl-none">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <div class="w-8 h-8 rounded-full bg-pink-600 flex items-center justify-center font-bold">TE</div>
+                                <span class="font-bold">Taylor E.</span>
+                                <span class="text-xs text-gray-500">2:42 PM</span>
+                            </div>
+                            <div class="typing-indicator text-gray-400">Typing</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="bg-black border-t border-gray-800 p-4">
+                <div class="max-w-3xl mx-auto">
+                    <div class="flex items-center space-x-2">
+                        <button class="text-gray-400 hover:text-purple-500 p-2">
+                            <i class="fas fa-paperclip text-xl"></i>
+                        </button>
+                        <button class="text-gray-400 hover:text-purple-500 p-2">
+                            <i class="fas fa-image text-xl"></i>
+                        </button>
+                        <div class="flex-1 relative">
+                            <input type="text" placeholder="Message The Inner Circle..." class="message-input bg-gray-800 w-full rounded-full py-3 px-4 text-white focus:border-purple-500 transition-all">
+                            <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-500">
+                                <i class="far fa-smile text-xl"></i>
+                            </button>
+                        </div>
+        <button class="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full transition-all">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+            </div>
+        </div>
+
+        <!-- Members Sidebar -->
+        <div id="membersSidebar" class="hidden md:block w-80 bg-gray-900 border-l border-gray-800 overflow-y-auto members-container">
+            <div class="p-4 sticky top-0 bg-gray-900 border-b border-gray-800 z-10">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-bold">Members (24)</h3>
+                    <button id="closeMembersBtn" class="md:hidden text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="flex border-b border-gray-800 mt-4">
+                    <button id="membersTab" class="tab-active pb-2 px-4">Members</button>
+                    <button id="pendingTab" class="text-gray-400 pb-2 px-4">Pending <span class="pending-badge bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 ml-1">3</span></button>
+                </div>
+            </div>
+            
+            <!-- Members List -->
+            <div id="membersList" class="p-2">
+                <div class="p-3 rounded-lg hover:bg-gray-800 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="relative">
+                            <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center font-bold">AD</div>
+                            <div class="absolute -bottom-1 -right-1 bg-yellow-500 rounded-full p-1">
+                                <i class="fas fa-crown text-xs"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-medium">Admin</p>
+                            <p class="text-xs text-gray-400">+254 700 123 456</p>
+                        </div>
+                    </div>
+                    <span class="text-xs bg-purple-900 px-2 py-1 rounded-full">You</span>
+                </div>
+                
+                <div class="p-3 rounded-lg hover:bg-gray-800 flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-yellow-600 flex items-center justify-center font-bold">JD</div>
+                    <div>
+                        <p class="font-medium">John Doe</p>
+                        <p class="text-xs text-gray-400">+254 701 234 567</p>
+                    </div>
+                </div>
+                
+                <div class="p-3 rounded-lg hover:bg-gray-800 flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">SA</div>
+                    <div>
+                        <p class="font-medium">Sarah A.</p>
+                        <p class="text-xs text-gray-400">+254 702 345 678</p>
+                    </div>
+                </div>
+                
+                <div class="p-3 rounded-lg hover:bg-gray-800 flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-pink-600 flex items-center justify-center font-bold">MJ</div>
+                    <div>
+                        <p class="font-medium">Mike J.</p>
+                        <p class="text-xs text-gray-400">+254 703 456 789</p>
+                    </div>
+                </div>
+                
+                <div class="p-3 rounded-lg hover:bg-gray-800 flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center font-bold">TE</div>
+                    <div>
+                        <p class="font-medium">Taylor E.</p>
+                        <p class="text-xs text-gray-400">+254 704 567 890</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pending Approvals List (Hidden by default) -->
+            <div id="pendingList" class="p-2 hidden">
+                <div class="p-3 rounded-lg bg-gray-800 mb-2">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Alex R.</p>
+                                <p class="text-xs text-gray-400">+254 705 678 901</p>
+                            </div>
+                        </div>
+                        <span class="text-xs bg-yellow-900 px-2 py-1 rounded-full">Pending</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="flex-1 bg-green-600 hover:bg-green-700 text-white py-1 rounded text-sm">
+                            Approve
+                        </button>
+                        <button class="flex-1 bg-red-600 hover:bg-red-700 text-white py-1 rounded text-sm">
+                            Reject
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-3 rounded-lg bg-gray-800 mb-2">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Morgan K.</p>
+                                <p class="text-xs text-gray-400">+254 706 789 012</p>
+                            </div>
+                        </div>
+                        <span class="text-xs bg-yellow-900 px-2 py-1 rounded-full">Pending</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="flex-1 bg-green-600 hover:bg-green-700 text-white py-1 rounded text-sm">
+                            Approve
+                        </button>
+                        <button class="flex-1 bg-red-600 hover:bg-red-700 text-white py-1 rounded text-sm">
+                            Reject
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-3 rounded-lg bg-gray-800">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Jordan L.</p>
+                                <p class="text-xs text-gray-400">+254 707 890 123</p>
+                            </div>
+                        </div>
+                        <span class="text-xs bg-yellow-900 px-2 py-1 rounded-full">Pending</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="flex-1 bg-green-600 hover:bg-green-700 text-white py-1 rounded text-sm">
+                            Approve
+                        </button>
+                        <button class="flex-1 bg-red-600 hover:bg-red-700 text-white py-1 rounded text-sm">
+                            Reject
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Invite Modal -->
+    <div id="inviteModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden modal">
+        <div class="bg-gray-900 rounded-xl max-w-md w-full mx-4 border border-gray-800 overflow-hidden">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Invite to The Inner Circle</h3>
+                    <button id="closeInviteModal" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-400 mb-2">Phone Number</label>
+                    <div class="flex">
+                        <select class="bg-gray-800 text-white px-3 py-2 rounded-l-lg border-r border-gray-700">
+                            <option selected>+254</option>
+                            <option>+1</option>
+                            <option>+44</option>
+                            <option>+91</option>
+                        </select>
+                        <input type="tel" placeholder="Enter phone number" class="flex-1 bg-gray-800 text-white px-4 py-2 rounded-r-lg">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-400 mb-2">Nickname (Optional)</label>
+                    <input type="text" placeholder="Enter nickname" class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-400 mb-2">Custom Message (Optional)</label>
+                    <textarea class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg h-24" placeholder="Hey! Join our exclusive Inner Circle group...">Hey! Join our exclusive Inner Circle group where the vibes are always high 🔥 and the conversations are real 💬. You're family here! 🙌</textarea>
+                </div>
+                
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-bold transition-all">
+                    Send Invite
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden modal">
+        <div class="bg-gray-900 rounded-xl max-w-md w-full mx-4 border border-gray-800 overflow-hidden">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Join The Inner Circle</h3>
+                    <button id="closeRegisterModal" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-400 mb-2">Phone Number</label>
+                    <div class="flex">
+                        <select class="bg-gray-800 text-white px-3 py-2 rounded-l-lg border-r border-gray-700">
+                            <option selected>+254</option>
+                            <option>+1</option>
+                            <option>+44</option>
+                            <option>+91</option>
+                        </select>
+                        <input type="tel" placeholder="Enter your phone number" class="flex-1 bg-gray-800 text-white px-4 py-2 rounded-r-lg">
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-400 mb-2">Choose Your Nickname</label>
+                    <input type="text" placeholder="Enter nickname" class="w-full bg-gray-800 text-white px-4 py-2 rounded-lg">
+                    <p class="text-xs text-gray-500 mt-1">This is how you'll appear in the group</p>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-400 mb-2">Verification Code</label>
+                    <div class="flex space-x-2">
+                        <input type="text" maxlength="1" class="w-12 h-12 bg-gray-800 text-white text-center rounded-lg">
+                        <input type="text" maxlength="1" class="w-12 h-12 bg-gray-800 text-white text-center rounded-lg">
+                        <input type="text" maxlength="1" class="w-12 h-12 bg-gray-800 text-white text-center rounded-lg">
+                        <input type="text" maxlength="1" class="w-12 h-12 bg-gray-800 text-white text-center rounded-lg">
+                        <input type="text" maxlength="1" class="w-12 h-12 bg-gray-800 text-white text-center rounded-lg">
+                        <input type="text" maxlength="1" class="w-12 h-12 bg-gray-800 text-white text-center rounded-lg">
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">We'll send a 6-digit code to verify your number</p>
+                </div>
+                
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-bold transition-all mb-2">
+                    Verify & Join
+                </button>
+                
+                <p class="text-center text-sm text-gray-400">
+                    By joining, you agree to our <a href="#" class="text-purple-500 hover:underline">Terms</a> and <a href="#" class="text-purple-500 hover:underline">Privacy Policy</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Modal -->
+    <div id="menuModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-900 rounded-xl max-w-xs w-full mx-4 border border-gray-800 overflow-hidden">
+            <div class="p-4">
+                <button class="w-full text-left px-4 py-3 hover:bg-gray-800 rounded-lg flex items-center space-x-3">
+                    <i class="fas fa-users text-purple-500"></i>
+                    <span>Group Info</span>
+                </button>
+                <button class="w-full text-left px-4 py-3 hover:bg-gray-800 rounded-lg flex items-center space-x-3">
+                    <i class="fas fa-bell text-purple-500"></i>
+                    <span>Notifications</span>
+                </button>
+                <button class="w-full text-left px-4 py-3 hover:bg-gray-800 rounded-lg flex items-center space-x-3">
+                    <i class="fas fa-image text-purple-500"></i>
+                    <span>Media & Files</span>
+                </button>
+                <button class="w-full text-left px-4 py-3 hover:bg-gray-800 rounded-lg flex items-center space-x-3">
+                    <i class="fas fa-search text-purple-500"></i>
+                    <span>Search</span>
+                </button>
+                <button class="w-full text-left px-4 py-3 hover:bg-gray-800 rounded-lg flex items-center space-x-3 text-red-400">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Exit Group</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal functionality
+        const inviteBtn = document.getElementById('inviteBtn');
+        const inviteModal = document.getElementById('inviteModal');
+        const closeInviteModal = document.getElementById('closeInviteModal');
+        const menuBtn = document.getElementById('menuBtn');
+        const menuModal = document.getElementById('menuModal');
+        const membersBtn = document.getElementById('membersBtn');
+        const membersSidebar = document.getElementById('membersSidebar');
+        const closeMembersBtn = document.getElementById('closeMembersBtn');
+        const membersTab = document.getElementById('membersTab');
+        const pendingTab = document.getElementById('pendingTab');
+        const membersList = document.getElementById('membersList');
+        const pendingList = document.getElementById('pendingList');
+        const registerModal = document.getElementById('registerModal');
+        const closeRegisterModal = document.getElementById('closeRegisterModal');
+        
+        // Show invite modal
+        inviteBtn.addEventListener('click', () => {
+            inviteModal.classList.remove('hidden');
+        });
+        
+        // Close invite modal
+        closeInviteModal.addEventListener('click', () => {
+            inviteModal.classList.add('hidden');
+        });
+        
+        // Show menu modal
+        menuBtn.addEventListener('click', () => {
+            menuModal.classList.remove('hidden');
+        });
+        
+        // Toggle members sidebar
+        membersBtn.addEventListener('click', () => {
+            membersSidebar.classList.toggle('hidden');
+        });
+        
+        // Close members sidebar
+        closeMembersBtn.addEventListener('click', () => {
+            membersSidebar.classList.add('hidden');
+        });
+        
+        // Switch between members and pending tabs
+        membersTab.addEventListener('click', () => {
+            membersTab.classList.add('tab-active');
+            membersTab.classList.remove('text-gray-400');
+            pendingTab.classList.remove('tab-active');
+            pendingTab.classList.add('text-gray-400');
+            membersList.classList.remove('hidden');
+            pendingList.classList.add('hidden');
+        });
+        
+        pendingTab.addEventListener('click', () => {
+            pendingTab.classList.add('tab-active');
+            pendingTab.classList.remove('text-gray-400');
+            membersTab.classList.remove('tab-active');
+            membersTab.classList.add('text-gray-400');
+            pendingList.classList.remove('hidden');
+            membersList.classList.add('hidden');
+        });
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === inviteModal) {
+                inviteModal.classList.add('hidden');
+            }
+            if (e.target === menuModal) {
+                menuModal.classList.add('hidden');
+            }
+            if (e.target === registerModal) {
+                registerModal.classList.add('hidden');
+            }
+        });
+        
+        // Simulate sending a message
+        const messageInput = document.querySelector('.message-input');
+        const sendBtn = document.querySelector('.fa-paper-plane').parentElement;
+        
+        sendBtn.addEventListener('click', () => {
+            if (messageInput.value.trim() !== '') {
+                // In a real app, this would send the message to the server
+                console.log('Message sent:', messageInput.value);
+                messageInput.value = '';
+            }
+        });
+        
+        // Allow pressing Enter to send message
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendBtn.click();
+            }
+        });
+        
+        // Show registration modal (simulating a new user joining)
+        setTimeout(() => {
+            registerModal.classList.remove('hidden');
+        }, 3000);
+        
+        // Close registration modal
+        closeRegisterModal.addEventListener('click', () => {
+            registerModal.classList.add('hidden');
+        });
+        
+        // Approve/Reject buttons functionality
+        document.querySelectorAll('.pendingList button').forEach(button => {
+            button.addEventListener('click', function() {
+                const card = this.closest('.p-3');
+                if (this.textContent.trim() === 'Approve') {
+                    card.classList.add('bg-green-900');
+                    setTimeout(() => {
+                        card.remove();
+                        // Update pending count
+                        const pendingCount = document.querySelectorAll('#pendingList .p-3').length;
+                        document.querySelector('#pendingTab span').textContent = pendingCount;
+                    }, 500);
+                } else {
+                    card.classList.add('bg-red-900');
+                    setTimeout(() => {
+                        card.remove();
+                        // Update pending count
+                        const pendingCount = document.querySelectorAll('#pendingList .p-3').length;
+                        document.querySelector('#pendingTab span').textContent = pendingCount;
+                    }, 500);
+                }
+            });
+        });
+    </script>
+<p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);"><a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank" >DeepSite</a> - 🧬 <a href="https://enzostvs-deepsite.hf.space?remix=specialspence/inner" style="color: #fff;text-decoration: underline;" target="_blank" >Remix</a></p></body>
+</html>
